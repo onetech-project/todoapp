@@ -6,4 +6,9 @@ const deleteTodoByIdAndUserid = (_id, userid, callback) => todoModel.findOneAndD
 const updateTodoByIdAndUserid = (_id, userid, updatedTodo, callback) =>
   todoModel.findOneAndUpdate({ _id, userid }, { ...updatedTodo, updatedBy: userid }, callback);
 
-export default { addTodo, getTodoByUserid, deleteTodoByIdAndUserid, updateTodoByIdAndUserid };
+export default {
+  addTodo,
+  getTodoByUserid,
+  deleteTodoByIdAndUserid,
+  updateTodoByIdAndUserid,
+};

@@ -1,30 +1,17 @@
 import Controller from "./Controller.js";
 import utils from "../../utils/index.js";
+import { AuthorizationHandler } from "../../middleware/AuthorizationHandler.js";
 import * as Constants from "../../constants/index.js";
 
 export const userRoutes = (router) => {
-  const parameterVerify = (email, username, password) => {
-    const error = [];
-    if (!email && !username) error.push("either email or username is prohibited to be empty");
-    if (!password) error.push("password is prohibited to be empty");
-    return error;
-  };
-
-  router.post("/api/login", async (req, res) => {
+  router.post("/auth/login", (req, res, next) => {
     const { email, username, password } = req.body;
-    const isBadRequest = parameterVerify(email, username, password);
-    if (isBadRequest.length) {
-      return res.status(400).send({ ...Constants.RESPONSE_OBJECT_FAILED, message: isBadRequest });
-    }
     Controller.getUserByUsername(username, (err, auth) => {
-      if (err) return res.status(500).send({ ...Constants.RESPONSE_OBJECT_FAILED, message: err });
-      if (!auth) return res.status(200).send({ ...Constants.RESPONSE_OBJECT_FAILED, message: "Username or password does not match" });
+      if (err) return next(err);
+      if (!auth) return next(utils.customError("CustomError", "Username and password does not match", 400));
       const { encrypted } = utils.cipher(password, auth.salt);
       if (encrypted !== auth.password) {
-        return res.status(200).send({
-          ...Constants.RESPONSE_OBJECT_FAILED,
-          message: "Username or Password does not match",
-        });
+        return next(utils.customError("CustomError", "Username and password does not match", 400));
       }
       return res.status(200).send({
         ...Constants.RESPONSE_OBJECT_SUCCESS,
@@ -33,22 +20,16 @@ export const userRoutes = (router) => {
     });
   });
 
-  router.post("/api/signup", async (req, res) => {
+  router.post("/auth/signup", (req, res, next) => {
     const { email, username, password } = req.body;
-    const isBadRequest = parameterVerify(email, username, password);
-    if (isBadRequest.length) {
-      return res.status(400).send({ ...Constants.RESPONSE_OBJECT_FAILED, message: isBadRequest });
-    }
-    const { encrypted, salt } = utils.cipher(password);
     Controller.addUser(
       {
         username,
         email,
-        password: encrypted,
-        salt,
+        password,
       },
       (err, auth) => {
-        if (err) return res.status(500).send({ ...Constants.RESPONSE_OBJECT_FAILED, message: utils.ErrorHandler(err) });
+        if (err) return next(err);
         return res.status(201).send({
           ...Constants.RESPONSE_OBJECT_SUCCESS,
           message: `${auth.username} has been successfully registered`,
@@ -57,7 +38,7 @@ export const userRoutes = (router) => {
     );
   });
 
-  router.post("/api/logout", utils.verifyJWT, (req, res) => {
+  router.post("/auth/logout", AuthorizationHandler, (req, res) => {
     return res.status(200).send({ ...Constants.RESPONSE_OBJECT_SUCCESS });
   });
 };

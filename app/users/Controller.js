@@ -6,4 +6,9 @@ const deleteUserByUsername = (username, callback) => userModel.findOneAndDelete(
 const updateUserByUsername = (username, updatedUser, callback) =>
   userModel.findOneAndUpdate({ username }, { ...updatedUser, updatedBy: user.username, updatedDate: Date.now }, callback);
 
-export default { addUser, getUserByUsername, deleteUserByUsername, updateUserByUsername };
+export default {
+  addUser,
+  getUserByUsername,
+  deleteUserByUsername,
+  updateUserByUsername,
+};

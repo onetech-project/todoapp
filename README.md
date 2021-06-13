@@ -28,7 +28,7 @@ Endpoint:
 - Signup
 
 ```
-URL: /api/signup
+URL: /api/auth/signup
 METHOD: POST
 BODY: {
     "email":"someone@domain.com",
@@ -40,7 +40,7 @@ BODY: {
 - Login
 
 ```
-URL: /api/login
+URL: /api/auth/login
 METHOD: POST
 BODY: {
 "email":"someone@domain.com",
@@ -52,7 +52,7 @@ BODY: {
 - Logout
 
 ```
-URL: /api/logout
+URL: /api/auth/logout
 METHOD: POST
 HEADER: { "Authorization": "Bearer token" }
 BODY: {}

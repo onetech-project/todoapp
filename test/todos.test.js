@@ -10,8 +10,8 @@ const user1 = {
 };
 
 const user2 = {
-  email: "sometwo@domain.com",
-  username: "sometwo",
+  email: "sometwos@domain.com",
+  username: "sometwos",
   password: "somepassword",
 };
 
@@ -23,10 +23,10 @@ let auth1 = {};
 let auth2 = {};
 
 const signupAndLoginUser = async (done) => {
-  await supertest(app).post("/api/signup").send(user1).set("Accept", "application/json");
-  await supertest(app).post("/api/signup").send(user2).set("Accept", "application/json");
-  const res1 = await supertest(app).post("/api/login").send(user1).set("Accept", "application/json");
-  const res2 = await supertest(app).post("/api/login").send(user2).set("Accept", "application/json");
+  await supertest(app).post("/api/auth/signup").send(user1).set("Accept", "application/json");
+  await supertest(app).post("/api/auth/signup").send(user2).set("Accept", "application/json");
+  const res1 = await supertest(app).post("/api/auth/login").send(user1).set("Accept", "application/json");
+  const res2 = await supertest(app).post("/api/auth/login").send(user2).set("Accept", "application/json");
   auth1.token = res1.body.token;
   auth2.token = res2.body.token;
   done();
@@ -60,8 +60,7 @@ test("Test Negative Create Todo Endpoint, no argument sent", async () => {
     .set("Accept", "application/json")
     .set("Authorization", auth1.token)
     .expect("Content-Type", /json/)
-    .expect(500)
-    .expect({ code: "00", message: "todo validation failed: title: title cannot be empty" });
+    .expect(400);
 });
 
 test("Test Negative Create Todo Endpoint, no authorization sent", async () => {
@@ -131,5 +130,32 @@ test("Test Delete Todo Endpoint, with user1 credential", async () => {
     .expect((res) => {
       assert(res.body.code, "01");
       assert(res.body.message, "SUCCESS");
+    });
+});
+
+test("Test Negative Update Todo Endpoint, with user2 credential but use user1 todo id", async () => {
+  await supertest(app)
+    .put(`/api/todo/${todo._id}`)
+    .send({ title: todo.title, isDone: true })
+    .set("Accept", "application/json")
+    .set("Authorization", auth2.token)
+    .expect("Content-Type", /json/)
+    .expect(404)
+    .expect((res) => {
+      assert(res.body.code, "404");
+      assert(res.body.message, "Data Not Found");
+    });
+});
+
+test("Test Delete Todo Endpoint, with user2 credential but use user1 todo id", async () => {
+  await supertest(app)
+    .delete(`/api/todo/${todo._id}`)
+    .set("Accept", "application/json")
+    .set("Authorization", auth2.token)
+    .expect("Content-Type", /json/)
+    .expect(404)
+    .expect((res) => {
+      assert(res.body.code, "404");
+      assert(res.body.message, "Data Not Found");
     });
 });
