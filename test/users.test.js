@@ -2,6 +2,9 @@ import app from "../app.js";
 import mongoose from "mongoose";
 import supertest from "supertest";
 import assert from "assert";
+import { config } from "dotenv";
+
+config();
 
 const user = {
   email: "someones@domain.com",
@@ -10,7 +13,11 @@ const user = {
 };
 
 beforeAll((done) => {
-  mongoose.connect("mongodb://localhost:27017/testDB", { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }, () => done());
+  mongoose.connect(
+    process.env.MONGODBTESTURL,
+    { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: true },
+    () => done()
+  );
 });
 
 afterAll((done) => {

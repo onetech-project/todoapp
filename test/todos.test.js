@@ -2,6 +2,9 @@ import app from "../app.js";
 import mongoose from "mongoose";
 import supertest from "supertest";
 import assert from "assert";
+import { config } from "dotenv";
+
+config();
 
 const user1 = {
   email: "someones@domain.com",
@@ -33,8 +36,10 @@ const signupAndLoginUser = async (done) => {
 };
 
 beforeAll((done) => {
-  mongoose.connect("mongodb://localhost:27017/testDB", { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }, () =>
-    signupAndLoginUser(done)
+  mongoose.connect(
+    process.env.MONGODBTESTURL,
+    { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: true },
+    () => signupAndLoginUser(done)
   );
 });
 
@@ -75,18 +80,16 @@ test("Test Get Todo Endpoint, with user1 credential", async () => {
     .expect("Content-Type", /json/)
     .expect(200)
     .expect((res) => {
-      const error = [];
-      if (!("todo" in res.body)) error.push("missing todo key");
-      if (!Array.isArray(res.body.todo)) error.push("property todo is not array type, expected to be array type");
-      if (!res.body.todo.length) error.push("todo length = 0, expected 1");
-      if (!("_id" in res.body.todo[0])) error.push("Missing _id key in todo object");
-      if (!("title" in res.body.todo[0])) error.push("Missing title key in todo object");
-      if (!("userid" in res.body.todo[0])) error.push("Missing userid key in todo object");
-      if (!("isDone" in res.body.todo[0])) error.push("Missing isDone key in todo object");
-      if (!("startDate" in res.body.todo[0])) error.push("Missing startDate key in todo object");
-      if (res.body.todo[0].title !== "Task 1") error.push("todo title is wrong, expected 'Task 1'");
-      if (error.length) throw new Error(error);
-      else todo = res.body.todo[0];
+      assert("todo" in res.body, true);
+      assert(Array.isArray(res.body.todo), true);
+      assert(res.body.todo.length, 1);
+      assert("_id" in res.body.todo[0], true);
+      assert("userid" in res.body.todo[0], true);
+      assert("title" in res.body.todo[0], true);
+      assert("isDone" in res.body.todo[0], true);
+      assert("startDate" in res.body.todo[0], true);
+      assert(res.body.todo[0].title, "Task 1");
+      todo = res.body.todo[0];
     });
 });
 
@@ -98,11 +101,9 @@ test("Test Get Todo Endpoint, with user2 credential", async () => {
     .expect("Content-Type", /json/)
     .expect(200)
     .expect((res) => {
-      const error = [];
-      if (!("todo" in res.body)) error.push("missing todo key");
-      if (!Array.isArray(res.body.todo)) error.push("property todo is not array type, expected to be array type");
-      if (res.body.todo.length) error.push("todo length > 0, expected 0");
-      if (error.length) throw new Error(error);
+      assert("todo" in res.body, true);
+      assert(Array.isArray(res.body.todo), true);
+      assert(res.body.todo.length, 1);
     });
 });
 
