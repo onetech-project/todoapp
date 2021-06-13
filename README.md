@@ -13,6 +13,16 @@ Unit Test:
 - Jest
 - Supertest
 
+How to run:
+
+```
+npm start
+npm run dev (with nodemon)
+npm run test (running all test suites)
+npm run test:users (running users test suites)
+npm run test:todos (running todos test suites)
+```
+
 Endpoint:
 
 - Signup
